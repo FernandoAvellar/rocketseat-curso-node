@@ -4,7 +4,8 @@ const Product = mongoose.model('Product');
 
 module.exports = {
     async index(req, res) {
-        const products = await Product.find();
+        const { page = 1 } = req.query;
+        const products = await Product.paginate({}, {page: page, limit: 10});
         return res.json(products);
     },
     async show(req, res) {
@@ -31,11 +32,11 @@ module.exports = {
         /*  await Product.findByIdAndDelete(req.params.id);
          return res.send(); */
         const isProductExists = await Product.findById(req.params.id);
-        if (isProductExists) {
-            const deletedProduct = await Product.findByIdAndDelete(req.params.id);
+        if (!isProductExists) {
+            res.status(404);
             return res.send();
         }
-        res.status(404);
+        await Product.findByIdAndDelete(req.params.id);
         return res.send();
     }
 };
